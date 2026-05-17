@@ -23,21 +23,18 @@ jobs:
         sed -i 's/^title =.*/title = БОГДИК ГЕМЕ/' buildozer.spec
         sed -i 's/^source.include_exts =.*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
         sed -i 's/^#icon.filename =.*/icon.filename = %(source.dir)s\/icon.png/' buildozer.spec
-        # Сразу соглашаемся на лицензии внутри конфига buildozer
         sed -i 's/^#android.accept_licenses =.*/android.accept_licenses = True/' buildozer.spec
     - name: Accept Android Licenses Manually
       run: |
         mkdir -p ~/.android
         touch ~/.android/repositories.cfg
-        # Скачиваем официальный инструмент лицензий и принимаем их
         wget https://google.com -O cmdline.zip
-        unzip q cmdline.zip -d cmdline
+        unzip -q cmdline.zip -d cmdline
         mkdir -p sdk/cmdline-tools
         mv cmdline/cmdline-tools sdk/cmdline-tools/latest
         yes | sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/sdk --licenses || true
     - name: Build APK
       run: |
-        # Запуск сборки с автоматическим пропуском интерактивных вопросов
         export APP_ANDROID_ACCEPT_LICENSES=1
         buildozer android debug
     - name: Upload APK
