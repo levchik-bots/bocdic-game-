@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Pygame APK
 on: [push, workflow_dispatch]
 jobs:
   build:
@@ -8,28 +8,30 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.10'
     - name: Install Buildozer
       run: |
         pip install --upgrade pip
-        pip install buildozer cython
+        pip install buildozer cython==0.29.36
     - name: Install Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libsqlite3-dev libx11-dev libxext-dev libxfixes-dev libxi-dev libxrandr-dev libxrender-dev zip unzip xclip openjdk-17-jdk
-    - name: Init Buildozer Config
+    - name: Init and Configure Buildozer
       run: |
         buildozer init
+        # Настраиваем параметры под Pygame и твои файлы
         sed -i 's/^title =.*/title = БОГДИК ГЕМЕ/' buildozer.spec
         sed -i 's/^source.include_exts =.*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
         sed -i 's/^#icon.filename =.*/icon.filename = %(source.dir)s\/icon.png/' buildozer.spec
         sed -i 's/^#android.accept_licenses =.*/android.accept_licenses = True/' buildozer.spec
-    - name: Build APK
+        # Важно: меняем требования на pygame и sdl2
+        sed -i 's/^requirements =.*/requirements = python3,pygame,sdl2,pillow/' buildozer.spec
+    - name: Build APK with Auto-Licenses
       run: |
-        # Встроенная команда автоматического согласия со всеми лицензиями Android SDK
-        buildozer android licenses
-        # Финальная сборка игры
-        buildozer android debug
+        export APP_ANDROID_ACCEPT_LICENSES=1
+        # Передаем 'yes' во все всплывающие вопросы SDK автоматически
+        yes | buildozer android debug
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
