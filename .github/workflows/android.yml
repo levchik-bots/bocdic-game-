@@ -24,18 +24,11 @@ jobs:
         sed -i 's/^source.include_exts =.*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
         sed -i 's/^#icon.filename =.*/icon.filename = %(source.dir)s\/icon.png/' buildozer.spec
         sed -i 's/^#android.accept_licenses =.*/android.accept_licenses = True/' buildozer.spec
-    - name: Accept Android Licenses Manually
-      run: |
-        mkdir -p ~/.android
-        touch ~/.android/repositories.cfg
-        wget https://google.com -O cmdline.zip
-        unzip -q cmdline.zip -d cmdline
-        mkdir -p sdk/cmdline-tools
-        mv cmdline/cmdline-tools sdk/cmdline-tools/latest
-        yes | sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/sdk --licenses || true
     - name: Build APK
       run: |
-        export APP_ANDROID_ACCEPT_LICENSES=1
+        # Встроенная команда автоматического согласия со всеми лицензиями Android SDK
+        buildozer android licenses
+        # Финальная сборка игры
         buildozer android debug
     - name: Upload APK
       uses: actions/upload-artifact@v4
