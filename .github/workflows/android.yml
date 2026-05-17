@@ -3,33 +3,20 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Запуск сборки в официальном готовом контейнере, где всё уже установлено
+    container: kivy/buildozer:latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    - name: Install Buildozer
-      run: |
-        pip install --upgrade pip
-        pip install buildozer cython==0.29.36
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libsqlite3-dev libx11-dev libxext-dev libxfixes-dev libxi-dev libxrandr-dev libxrender-dev zip unzip xclip openjdk-17-jdk
     - name: Init and Configure Buildozer
       run: |
         buildozer init
         sed -i 's/^title =.*/title = БОГДИК ГЕМЕ/' buildozer.spec
         sed -i 's/^source.include_exts =.*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
         sed -i 's/^#icon.filename =.*/icon.filename = %(source.dir)s\/icon.png/' buildozer.spec
-        sed -i 's/^#android.accept_licenses =.*/android.accept_licenses = True/' buildozer.spec
         sed -i 's/^requirements =.*/requirements = python3,pygame,pillow/' buildozer.spec
-        sed -i 's/^#android.api =.*/android.api = 33/' buildozer.spec
-        sed -i 's/^#android.minapi =.*/android.minapi = 21/' buildozer.spec
+        sed -i 's/^#android.accept_licenses =.*/android.accept_licenses = True/' buildozer.spec
     - name: Build APK
       run: |
-        export APP_ANDROID_ACCEPT_LICENSES=1
         buildozer android debug
     - name: Upload APK
       uses: actions/upload-artifact@v4
