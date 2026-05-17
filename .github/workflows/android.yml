@@ -9,10 +9,10 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    - name: Install Buildozer
+    - name: Install Stable Buildozer
       run: |
         pip install --upgrade pip
-        pip install buildozer cython==0.29.36
+        pip install git+https://github.com cython==0.29.36
     - name: Install Dependencies
       run: |
         sudo apt-get update
@@ -20,17 +20,16 @@ jobs:
     - name: Init and Configure Buildozer
       run: |
         buildozer init
-        # Настраиваем параметры под Pygame и твои файлы
+        # Базовые настройки игры
         sed -i 's/^title =.*/title = БОГДИК ГЕМЕ/' buildozer.spec
         sed -i 's/^source.include_exts =.*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
         sed -i 's/^#icon.filename =.*/icon.filename = %(source.dir)s\/icon.png/' buildozer.spec
         sed -i 's/^#android.accept_licenses =.*/android.accept_licenses = True/' buildozer.spec
-        # Важно: меняем требования на pygame и sdl2
-        sed -i 's/^requirements =.*/requirements = python3,pygame,sdl2,pillow/' buildozer.spec
-    - name: Build APK with Auto-Licenses
+        # Указываем специальный мобильный рецепт pygame-bootstrap
+        sed -i 's/^requirements =.*/requirements = python3,pygame-bootstrap,sdl2,pillow/' buildozer.spec
+    - name: Build APK
       run: |
         export APP_ANDROID_ACCEPT_LICENSES=1
-        # Передаем 'yes' во все всплывающие вопросы SDK автоматически
         yes | buildozer android debug
     - name: Upload APK
       uses: actions/upload-artifact@v4
